@@ -70,6 +70,28 @@ button { font-family: inherit; }
 .pill-synthetic { background: rgba(46, 211, 166, .12); color: #7ee7c6; border: 1px solid rgba(46, 211, 166, .28); }
 .pill .dot { width: 6px; height: 6px; border-radius: 50%; background: currentColor; }
 
+/* -------------------------------------------------------------- app tabs */
+.app-tabs { background: #fff; border-bottom: 1px solid var(--line); }
+.app-tabs-inner {
+  max-width: 1280px; margin: 0 auto; padding: 0 28px;
+  display: flex; align-items: stretch; gap: 20px;
+}
+.app-tab {
+  display: inline-flex; align-items: center; justify-content: center; gap: 9px;
+  padding: 13px 4px; border: 0; border-bottom: 3px solid transparent;
+  background: none; color: var(--muted); font-size: 13px; font-weight: 600; cursor: pointer;
+}
+.app-tab:hover { color: var(--ink); }
+.app-tab.is-active { color: var(--navy); border-bottom-color: var(--accent); }
+.app-tab:focus-visible, .updates-panel button:focus-visible {
+  outline: 2px solid var(--accent); outline-offset: -2px; border-radius: 4px;
+}
+.tab-version {
+  padding: 2px 6px; border-radius: 5px; background: #eef2f7;
+  color: var(--ink-2); font: 10.5px var(--mono);
+}
+.app-tab.is-active .tab-version { background: var(--accent-soft); color: #0b6b54; }
+
 /* --------------------------------------------------------------- stepper */
 .stepper { background: #fff; border-bottom: 1px solid var(--line); position: sticky; top: 0; z-index: 30; }
 .stepper-inner {
@@ -456,6 +478,57 @@ button { font-family: inherit; }
 .dq-box h4 { font-size: 11px; text-transform: uppercase; letter-spacing: .05em; color: var(--muted); margin-bottom: 6px; }
 .dq-box ul { margin: 0; padding-left: 16px; font-size: 12.5px; color: var(--ink-2); display: grid; gap: 3px; }
 
+/* ---------------------------------------------------------- what's new */
+.updates-panel { max-width: 1080px; margin: 0 auto; }
+.updates-heading {
+  display: flex; align-items: flex-start; justify-content: space-between; gap: 24px;
+  padding: 8px 0 28px;
+}
+.updates-kicker {
+  font-size: 10.5px; font-weight: 700; letter-spacing: .1em; text-transform: uppercase;
+  color: var(--accent); margin-bottom: 8px;
+}
+.updates-heading h1 { font-size: 32px; }
+.updates-lede { color: var(--ink-2); font-size: 14px; max-width: 58ch; margin-top: 10px; }
+.version-summary {
+  display: grid; gap: 5px; padding: 13px 18px; border: 1px solid var(--line);
+  background: #fff; border-radius: 10px; white-space: nowrap;
+}
+.version-summary span { color: var(--muted); font-size: 11px; }
+.version-summary strong { color: var(--navy); font: 600 19px var(--mono); }
+.release-layout { display: grid; grid-template-columns: minmax(0, 1fr) 260px; align-items: start; gap: 24px; }
+.release-list { display: grid; gap: 20px; }
+.release-card { padding: 24px; margin-bottom: 0; }
+.release-card.is-current { border-top: 3px solid var(--accent); }
+.release-meta { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; margin-bottom: 14px; }
+.release-version { font: 600 13px var(--mono); color: var(--navy); }
+.release-latest {
+  color: #0b6b54; background: var(--accent-soft); border-radius: 5px;
+  padding: 3px 7px; font-size: 10.5px; font-weight: 650;
+}
+.release-meta time { color: var(--muted); font-size: 12px; margin-left: auto; }
+.release-card h2 { font-size: 20px; }
+.release-summary { color: var(--ink-2); font-size: 13.5px; margin-top: 7px; }
+.release-changes { list-style: none; margin: 20px 0 0; padding: 18px 0 0; border-top: 1px solid var(--line); display: grid; gap: 19px; }
+.release-changes li { display: grid; grid-template-columns: 74px minmax(0, 1fr); align-items: start; gap: 14px; }
+.release-changes h3 { font-size: 13.5px; margin-bottom: 4px; }
+.release-changes p { color: var(--ink-2); font-size: 12.5px; line-height: 1.65; overflow-wrap: anywhere; }
+.change-badge { border-radius: 5px; padding: 3px 8px; font-size: 10.5px; font-weight: 700; text-align: center; }
+.change-added { background: var(--accent-soft); color: #0b6b54; }
+.change-improved { background: var(--low-soft); color: var(--low); }
+.change-fixed { background: var(--medium-soft); color: #8a5100; }
+.change-update { background: #eef2f7; color: var(--ink-2); }
+.version-guide { padding: 20px; background: #fbfcfe; }
+.version-guide h2 { font-size: 14px; margin-bottom: 10px; }
+.version-guide p { color: var(--muted); font-size: 12px; line-height: 1.65; }
+.version-format { display: block; font: 11px var(--mono); color: var(--ink-2); margin-top: 7px; }
+.version-guide dl { margin: 18px 0; display: grid; gap: 4px; }
+.version-guide dt { color: var(--ink-2); font-size: 12px; font-weight: 650; }
+.version-guide dd { color: var(--muted); margin: 0 0 8px; font-size: 12px; }
+.version-guide .btn { margin-top: 20px; }
+.release-message { color: var(--muted); font-size: 13px; padding: 24px; background: #fff; border: 1px solid var(--line); border-radius: var(--radius); }
+.retry-releases { margin: 10px 0 20px; }
+
 /* ------------------------------------------------------------- responsive */
 @media (max-width: 1120px) {
   .hero { grid-template-columns: 1fr; }
@@ -465,10 +538,27 @@ button { font-family: inherit; }
 @media (max-width: 860px) {
   .upload-grid { grid-template-columns: 1fr; }
   .tolerance-grid { grid-template-columns: 1fr; }
-  .page, .topbar-inner, .stepper-inner { padding-left: 16px; padding-right: 16px; }
+  .page, .topbar-inner, .stepper-inner, .app-tabs-inner { padding-left: 16px; padding-right: 16px; }
+  .release-layout { grid-template-columns: minmax(0, 1fr); }
   .step-label { display: none; }
   .mapping-row { grid-template-columns: 1fr; gap: 6px; }
   .mapping-conf { text-align: left; }
   .kpi-grid { grid-template-columns: 1fr 1fr; }
   .compare { grid-template-columns: 1fr; }
+}
+@media (max-width: 600px) {
+  .topbar-inner { flex-wrap: wrap; }
+  .topbar-actions { width: 100%; justify-content: space-between; }
+  .app-tabs-inner { gap: 14px; }
+  .app-tab { gap: 6px; font-size: 12.5px; }
+  .updates-heading { flex-wrap: wrap; gap: 16px; padding-bottom: 22px; }
+  .updates-heading h1 { font-size: 28px; }
+  .version-summary { display: flex; align-items: center; gap: 12px; padding: 9px 12px; }
+  .version-summary strong { font-size: 15px; }
+  .release-card { padding: 18px; }
+  .release-card h2 { font-size: 18px; }
+  .release-changes li { grid-template-columns: minmax(0, 1fr); gap: 7px; }
+  .change-badge { justify-self: start; }
+  .release-meta { gap: 8px; }
+  .release-meta time { width: 100%; margin-left: 0; }
 }

@@ -3,7 +3,9 @@ import io
 import pytest
 from fastapi.testclient import TestClient
 
-from app.main import app
+from app.main import SESSIONS, app
+from reconiq import __version__
+from reconiq.releases import RELEASES
 
 
 @pytest.fixture()
@@ -20,9 +22,45 @@ def session(client):
 
 
 def test_index_and_static_assets(client):
-    assert client.get("/").status_code == 200
+    page = client.get("/")
+    assert page.status_code == 200
+    assert 'id="tab-whats-new"' in page.text
+    assert 'aria-controls="view-whats-new"' in page.text
+    assert 'id="view-whats-new"' in page.text
     assert client.get("/static/styles.css").status_code == 200
     assert client.get("/static/app.js").status_code == 200
+
+
+@pytest.mark.parametrize("headers", [{}, {"X-Session": "not-a-session"}])
+def test_release_history_is_public_without_creating_sessions(client, headers):
+    sessions_before = set(SESSIONS)
+    response = client.get("/api/releases", headers=headers)
+    assert response.status_code == 200
+    assert response.json() == {"current_version": __version__, "releases": RELEASES}
+    assert set(SESSIONS) == sessions_before
+
+
+def test_release_history_does_not_change_reconciliation_work(client, session):
+    client.post("/api/demo/load", headers=session)
+    result = client.post("/api/reconcile", headers=session, json={})
+    assert result.status_code == 200
+    stored = SESSIONS[session["X-Session"]]
+    sources_before = dict(stored.sources)
+    result_before = stored.result
+
+    assert client.get("/api/releases", headers=session).status_code == 200
+    assert stored.sources == sources_before
+    assert stored.result is result_before
+
+
+def test_application_version_is_consistent_in_api_metadata(client):
+    assert client.get("/api/health").json()["version"] == __version__
+    assert client.get("/openapi.json").json()["info"]["version"] == __version__
+
+
+@pytest.mark.parametrize("method", ["post", "put", "delete"])
+def test_release_history_is_read_only(client, method):
+    assert getattr(client, method)("/api/releases").status_code == 405
 
 
 def test_demo_end_to_end(client, session):

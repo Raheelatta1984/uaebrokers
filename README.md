@@ -52,6 +52,21 @@ commission), statement lines missing from the book (unrecognised cash), duplicat
 cancelled-but-invoiced policies, endorsements not posted, currency mismatches, and probable
 matches where the policy number was typed differently.
 
+## What's New and app versions
+
+The **What's New** tab is public and always available — no files or reconciliation
+required. Open it from the navigation or go directly to `http://localhost:8000/#whats-new`.
+It shows the current version, release dates and a newest-first history of added features,
+improvements and fixes. Switching tabs keeps your files, mappings, tolerances, results
+and exception filters intact.
+
+Release notes live in [`reconiq/releases.json`](reconiq/releases.json), tracked in Git.
+The newest release defines the app version everywhere, including the navigation badge,
+`GET /api/releases`, `GET /api/health` and API documentation. To publish a future update,
+prepend one entry, use a `MAJOR.MINOR.PATCH` version and include it in the feature PR.
+See [the release guide](docs/releases.md) for the format and checks. Restart or redeploy
+the app after merging to serve the new notes.
+
 ## The demo dataset
 
 `demo_data/` contains the synthetic dataset, and the app loads it with one click:
@@ -154,12 +169,15 @@ reconiq/
   ingest.py      CSV / Excel / PDF ingestion and header discovery
   engine.py      matching, comparison rules, severity, KPIs  (pure, no I/O)
   demo.py        synthetic UAE demo dataset + the three statement formats
+  releases.json  public release history (newest entry defines the app version)
+  releases.py    changelog loading and validation
 app/
   main.py        FastAPI app: sessions, upload, reconcile, exports
   static/        index.html, styles.css, app.js  (no build step)
 demo_data/       the generated demo files, ready to drag into the app
-tests/           69 tests: parsing, mapping, ingestion, engine rules, API end-to-end
-docs/            demo script
+tests/           parsing, mapping, ingestion, engine rules, API and release-history tests
+docs/            demo script and release-publishing guide
+.github/         continuous integration for pull requests and main
 ```
 
 The engine has no framework, database or file-system dependency — that is intentional, because
@@ -168,14 +186,16 @@ the plan calls for the matching core to be reusable outside insurance.
 ## Tests
 
 ```bash
-./.venv/bin/python -m pytest tests -q      # 69 passed
+./.venv/bin/python -m pytest tests -q
 ```
 
 They cover the parsing traps that break real reconciliations (percentage precision, day-first
 dates, zero-padded keys, dotted legal suffixes), column detection traps (`Commission %` vs
 `Commission Amount`, VAT not being a rate), ingestion of all three statement formats, every
 exception category in the demo dataset, tolerance sensitivity, and the API including export
-files and the failure paths (bad mapping, empty statement, unsupported file).
+files and the failure paths (bad mapping, empty statement, unsupported file). Release-history
+tests also validate semantic versions, date ordering, required notes, public read-only access
+and version consistency. GitHub Actions runs the full suite on pull requests and `main`.
 
 ## Deliberately not built (V0 scope)
 
