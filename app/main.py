@@ -24,6 +24,7 @@ from reconiq import __version__, demo
 from reconiq.engine import Config, build_records, reconcile
 from reconiq.ingest import IngestError, prepare
 from reconiq.releases import RELEASES
+from reconiq.quality import QUALITY
 from reconiq.schema import describe_mapping, mapping_ready, normalize_mapping
 
 BASE_DIR = Path(__file__).resolve().parent
@@ -122,6 +123,12 @@ def health() -> dict:
 def release_history() -> dict:
     """Public product updates. Reading these never creates or changes a session."""
     return {"current_version": __version__, "releases": RELEASES}
+
+
+@app.get("/api/quality")
+def quality_overview() -> dict:
+    """Public test catalogue and recorded verification snapshot; read-only."""
+    return QUALITY
 
 
 @app.post("/api/session")

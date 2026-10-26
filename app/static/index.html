@@ -37,6 +37,8 @@
             aria-selected="false" aria-controls="view-whats-new" data-view="whats-new">
       What's New <span class="tab-version" id="app-version" hidden></span>
     </button>
+    <button class="app-tab" id="tab-quality" type="button" role="tab" tabindex="-1"
+            aria-selected="false" aria-controls="view-quality" data-view="quality">Quality &amp; incidents</button>
   </div>
 </nav>
 
@@ -330,6 +332,29 @@
         <p>Newest releases appear first. Previous versions stay here so everyone can see how ReconIQ has evolved.</p>
         <button class="btn btn-ghost btn-sm btn-block" data-view="workspace" type="button">Back to reconciliation</button>
       </aside>
+    </div>
+  </section>
+
+  <!-- =========================== QUALITY & INCIDENTS ======================= -->
+  <section id="view-quality" class="panel quality-panel" role="tabpanel"
+           aria-labelledby="tab-quality" tabindex="0" hidden>
+    <div class="updates-heading">
+      <div>
+        <p class="updates-kicker">Review record</p>
+        <h1>Quality &amp; incidents</h1>
+        <p class="updates-lede">A transparent guide to the automated checks, scenarios, scripts, outcomes, impacts, known findings, and incident records in this prototype.</p>
+      </div>
+      <div class="quality-status" id="quality-status" role="status">Loading quality record…</div>
+    </div>
+    <div class="quality-layout">
+      <aside class="card quality-controls" aria-labelledby="quality-controls-title">
+        <h2 id="quality-controls-title">Sections &amp; options</h2>
+        <p class="muted">Show or hide sections on this device. Preferences are saved in this browser.</p>
+        <div id="quality-toggles" class="quality-toggles"></div>
+      </aside>
+      <div id="quality-content" class="quality-content" aria-live="polite">
+        <p class="release-message">Loading the public test catalogue and verification snapshot…</p>
+      </div>
     </div>
   </section>
 </main>
