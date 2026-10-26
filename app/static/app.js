@@ -11,7 +11,19 @@ const state = {
   view: "workspace",
   releases: null,
   releasesLoading: false,
+  quality: null,
+  qualityLoading: false,
 };
+
+const QUALITY_PREFS_KEY = "reconiq-quality-section-preferences-v1";
+const QUALITY_SECTIONS = [
+  { id: "overview", label: "Overview & guide", defaultEnabled: true },
+  { id: "verification", label: "Latest test result", defaultEnabled: true },
+  { id: "scenarios", label: "Test scenarios & scripts", defaultEnabled: true },
+  { id: "findings", label: "Defects & findings", defaultEnabled: true },
+  { id: "incidents", label: "Incident register", defaultEnabled: true },
+  { id: "ai-guidance", label: "AI guidance (opt-in)", defaultEnabled: false },
+];
 
 const $ = (sel, root = document) => root.querySelector(sel);
 const $$ = (sel, root = document) => Array.from(root.querySelectorAll(sel));
@@ -87,6 +99,7 @@ function setView(view) {
   state.view = view;
   $("#view-workspace").hidden = view !== "workspace";
   $("#view-whats-new").hidden = view !== "whats-new";
+  $("#view-quality").hidden = view !== "quality";
   $("#reconciliation-steps").hidden = view !== "workspace";
   $$(".app-tab").forEach((tab) => {
     const selected = tab.dataset.view === view;
@@ -98,7 +111,7 @@ function setView(view) {
 }
 
 function navigateView(view) {
-  const hash = view === "whats-new" ? "#whats-new" : "#reconciliation";
+  const hash = view === "whats-new" ? "#whats-new" : view === "quality" ? "#quality" : "#reconciliation";
   setView(view);
   $(`#tab-${view}`).focus({ preventScroll: true });
   if (window.location.hash !== hash) window.location.hash = hash;
@@ -170,6 +183,101 @@ async function loadReleases() {
   } finally {
     state.releasesLoading = false;
     $("#release-notes").setAttribute("aria-busy", "false");
+  }
+}
+
+/* --------------------------------------------------------- quality record */
+function qualityPreferences() {
+  const defaults = Object.fromEntries(QUALITY_SECTIONS.map((item) => [item.id, item.defaultEnabled]));
+  try {
+    const saved = JSON.parse(localStorage.getItem(QUALITY_PREFS_KEY) || "{}");
+    return { ...defaults, ...Object.fromEntries(Object.keys(defaults).map((id) => [id, saved[id] === undefined ? defaults[id] : Boolean(saved[id])])) };
+  } catch (_) {
+    return defaults;
+  }
+}
+
+function renderQuality() {
+  const quality = state.quality;
+  if (!quality) return;
+  const prefs = qualityPreferences();
+  const verification = quality.verification;
+  const stamp = new Date(verification.recorded_at);
+  const stampLabel = Number.isNaN(stamp.getTime()) ? verification.recorded_at : stamp.toLocaleString("en-AU", { timeZone: "UTC", dateStyle: "medium", timeStyle: "short" }) + " UTC";
+  $("#quality-status").textContent = `${verification.status === "verified" ? "Verified" : "Unverified"} · ${verification.passed} passed · ${verification.failed} failed`;
+  const toggles = [
+    ...QUALITY_SECTIONS.map((item) => `
+      <label class="quality-toggle">
+        <span><strong>${escapeHtml(item.label)}</strong>${item.id === "ai-guidance" ? '<small>Off by default; no AI service is connected</small>' : ""}</span>
+        <input type="checkbox" data-quality-pref="${item.id}" ${prefs[item.id] ? "checked" : ""} aria-label="Show ${escapeHtml(item.label)}" />
+      </label>`),
+    ...quality.features.filter((feature) => !QUALITY_SECTIONS.some((item) => item.id === feature.id)).map((feature) => `
+      <label class="quality-toggle is-unavailable" title="${escapeHtml(feature.note)}">
+        <span><strong>${escapeHtml(feature.name)}</strong><small>Future option · not connected</small></span>
+        <input type="checkbox" disabled aria-label="${escapeHtml(feature.name)} unavailable" />
+      </label>`),
+  ].join("");
+  $("#quality-toggles").innerHTML = toggles;
+  $("#quality-toggles").querySelectorAll("[data-quality-pref]").forEach((input) => {
+    input.addEventListener("change", () => {
+      const updated = qualityPreferences();
+      updated[input.dataset.qualityPref] = input.checked;
+      try { localStorage.setItem(QUALITY_PREFS_KEY, JSON.stringify(updated)); } catch (_) { /* browser storage is optional */ }
+      renderQuality();
+    });
+  });
+
+  const suites = quality.suites.map((suite) => `
+    <details class="quality-suite">
+      <summary><span class="quality-suite-name">${escapeHtml(suite.name)}</span><span class="quality-kind">${escapeHtml(suite.kind)}</span><span class="quality-file">${escapeHtml(suite.file)}</span></summary>
+      <div class="quality-suite-body">
+        <p>${escapeHtml(suite.purpose)}</p>
+        <h4>High-level test steps</h4>
+        <ol>${suite.steps.map((step) => `<li>${escapeHtml(step)}</li>`).join("")}</ol>
+        <h4>Referenced test scripts</h4>
+        <div class="script-list">${suite.scripts.map((script) => `<code>${escapeHtml(script)}</code>`).join("")}</div>
+        <p class="quality-expect"><strong>Expected result:</strong> ${escapeHtml(suite.expected)}</p>
+        <p class="quality-expect"><strong>Impact:</strong> ${escapeHtml(suite.impact)}</p>
+      </div>
+    </details>`).join("");
+  const findings = quality.findings.map((finding) => `
+    <article class="quality-finding">
+      <div class="quality-finding-meta"><span class="quality-kind">${escapeHtml(finding.type)}</span><span class="quality-severity">${escapeHtml(finding.severity)}</span><span class="quality-state">${escapeHtml(finding.status)}</span></div>
+      <h3>${escapeHtml(finding.summary)}</h3>
+      <p><strong>Evidence:</strong> ${escapeHtml(finding.evidence)}</p>
+      <p><strong>Disposition / fix:</strong> ${escapeHtml(finding.resolution)}</p>
+    </article>`).join("");
+  const incidents = quality.incidents.length ? quality.incidents.map((incident) => `
+    <article class="quality-finding"><h3>${escapeHtml(incident.title || incident.id)}</h3><p>${escapeHtml(incident.summary || "")}</p></article>`).join("") : `
+    <div class="quality-empty"><strong>No incidents recorded</strong><p>${escapeHtml(quality.incident_note)}</p></div>`;
+  const aiFeature = quality.features.find((feature) => feature.id === "ai-guidance");
+  const cards = [
+    `<section class="card quality-card" data-quality-section="overview"><h2>Purpose &amp; reviewer guide</h2><p>${escapeHtml(quality.purpose)}</p><ol class="quality-guide">${quality.guide.map((line) => `<li>${escapeHtml(line)}</li>`).join("")}</ol><p class="quality-scope-note">This page reports repository evidence and an explicitly recorded local run. It does not claim that test scenarios outside this codebase were executed.</p></section>`,
+    `<section class="card quality-card" data-quality-section="verification"><h2>Latest recorded automated run</h2><div class="quality-metrics"><div><span>Result</span><strong>${escapeHtml(verification.result)}</strong></div><div><span>Command</span><code>${escapeHtml(verification.command)}</code></div><div><span>Recorded (UTC)</span><strong>${escapeHtml(stampLabel)}</strong></div><div><span>Run scope</span><strong>${escapeHtml(verification.scope)}</strong></div></div><div class="quality-warning"><strong>Warning (${verification.warnings}):</strong> ${escapeHtml(verification.warning_detail)}</div><p class="muted">${escapeHtml(verification.performance_note)}</p></section>`,
+    `<section class="card quality-card" data-quality-section="scenarios"><h2>Test scenarios, scripts &amp; expected impact</h2><p class="muted">Expand a suite to review its high-level steps and source test names. Parametrized test functions produce multiple individual cases.</p><div class="quality-suite-list">${suites}</div></section>`,
+    `<section class="card quality-card" data-quality-section="findings"><h2>Defects &amp; findings</h2><p class="muted">Seeded business exceptions and test-tool warnings are kept separate from confirmed product defects.</p><div class="quality-findings">${findings}</div></section>`,
+    `<section class="card quality-card" data-quality-section="incidents"><h2>Incident register</h2><p class="muted">Operational incidents are distinct from reconciliation exceptions and automated test failures.</p>${incidents}</section>`,
+    `<section class="card quality-card" data-quality-section="ai-guidance" ${prefs["ai-guidance"] ? "" : "hidden"}><h2>AI guidance · ${prefs["ai-guidance"] ? "preference on" : "off"}</h2><div class="quality-ai-note"><strong>${aiFeature.available ? "AI assistance available" : "AI service not connected"}</strong><p>${escapeHtml(aiFeature.note)}</p><p>No AI-generated test conclusions or incident classifications are shown here.</p></div></section>`,
+  ].join("");
+  $("#quality-content").innerHTML = cards;
+  $$("[data-quality-section]").forEach((section) => {
+    if (section.dataset.qualitySection !== "ai-guidance") section.hidden = !prefs[section.dataset.qualitySection];
+  });
+}
+
+async function loadQuality() {
+  if (state.qualityLoading) return;
+  state.qualityLoading = true;
+  try {
+    const payload = await api("/api/quality");
+    if (!payload || !payload.verification || !Array.isArray(payload.suites)) throw new Error("Invalid quality record.");
+    state.quality = payload;
+    renderQuality();
+  } catch (error) {
+    $("#quality-status").textContent = "Quality record unavailable";
+    $("#quality-content").innerHTML = `<p class="release-message">Could not load the test catalogue: ${escapeHtml(error.message)}</p>`;
+  } finally {
+    state.qualityLoading = false;
   }
 }
 
@@ -854,7 +962,8 @@ function wire() {
     navigateView(tabs[next].dataset.view);
   });
   window.addEventListener("hashchange", () => {
-    setView(window.location.hash === "#whats-new" ? "whats-new" : "workspace");
+    const hash = window.location.hash;
+    setView(hash === "#whats-new" ? "whats-new" : hash === "#quality" ? "quality" : "workspace");
   });
   $("#btn-retry-releases").addEventListener("click", loadReleases);
 
@@ -954,10 +1063,12 @@ function wire() {
 
 async function init() {
   wire();
-  setView(window.location.hash === "#whats-new" ? "whats-new" : "workspace");
+  const initialHash = window.location.hash;
+  setView(initialHash === "#whats-new" ? "whats-new" : initialHash === "#quality" ? "quality" : "workspace");
   renderFileLists();
-  // Product updates are public: do not wait for a reconciliation session to load them.
+  // Public review pages do not require a reconciliation session.
   loadReleases();
+  loadQuality();
   loadDemoCatalogue();
   try {
     const session = await api("/api/session", { method: "POST" });

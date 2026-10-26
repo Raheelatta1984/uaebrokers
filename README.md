@@ -67,6 +67,25 @@ prepend one entry, use a `MAJOR.MINOR.PATCH` version and include it in the featu
 See [the release guide](docs/releases.md) for the format and checks. Restart or redeploy
 the app after merging to serve the new notes.
 
+## Quality & incidents review
+
+The **Quality & incidents** tab is a public, read-only review page at `/#quality` (also
+available from `GET /api/quality`). It does not require a reconciliation session, create
+one, or expose uploaded files. Reviewers can inspect high-level steps, source pytest names,
+expected outcomes, and impacts for normalization, schema mapping, ingestion, reconciliation
+regression, API integration, and release-history validation.
+
+The page also records the latest repository test-suite snapshot, lists known findings, and
+separates the demo's deliberately planted business exceptions from software defects and
+operational incidents. Section visibility preferences are stored in the reviewer's browser.
+AI guidance is off by default; enabling the preference only displays a local notice because
+no AI provider is integrated and no data is sent to one. Live CI status and incident assignment
+are shown as unavailable future options, not as implemented capabilities.
+
+The snapshot is a manually maintained record of an actual local `pytest` run, not a live CI
+feed or production performance/SLA claim. For the exact current evidence, see the tab and
+`reconiq/quality.py`. Test scripts remain in `tests/`; CI runs `python -m pytest tests -q`.
+
 ## The demo dataset
 
 `demo_data/` contains the synthetic dataset, and the app loads it with one click:

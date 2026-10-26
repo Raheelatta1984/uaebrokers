@@ -40,6 +40,36 @@ def test_release_history_is_public_without_creating_sessions(client, headers):
     assert set(SESSIONS) == sessions_before
 
 
+def test_quality_tab_is_in_app_shell(client):
+    page = client.get("/")
+    assert page.status_code == 200
+    assert 'id="tab-quality"' in page.text
+    assert 'id="view-quality"' in page.text
+    assert 'id="quality-toggles"' in page.text
+
+
+def test_quality_catalogue_is_public_and_describes_test_evidence(client):
+    sessions_before = set(SESSIONS)
+    response = client.get("/api/quality")
+    assert response.status_code == 200
+    quality = response.json()
+    assert quality["verification"]["passed"] == 108
+    assert quality["verification"]["failed"] == 0
+    assert quality["verification"]["command"] == "python -m pytest tests -q"
+    assert {suite["id"] for suite in quality["suites"]} >= {
+        "normalization", "schema", "ingestion", "reconciliation", "api", "release-history"
+    }
+    reconciliation = next(s for s in quality["suites"] if s["id"] == "reconciliation")
+    assert "test_demo_dataset_surfaces_the_planted_exceptions" in reconciliation["scripts"]
+    assert reconciliation["steps"] and reconciliation["impact"]
+    assert quality["incidents"] == []
+    assert set(SESSIONS) == sessions_before
+
+
+def test_quality_catalogue_is_read_only(client):
+    assert client.post("/api/quality").status_code == 405
+
+
 def test_release_history_does_not_change_reconciliation_work(client, session):
     client.post("/api/demo/load", headers=session)
     result = client.post("/api/reconcile", headers=session, json={})

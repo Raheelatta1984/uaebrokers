@@ -1,5 +1,28 @@
 [
   {
+    "version": "0.3.0",
+    "date": "2026-10-26",
+    "title": "A transparent quality and incident review",
+    "summary": "A public, read-only place to review the automated test catalogue, high-level steps, scripts, recorded outcomes, impacts, findings, and incident status.",
+    "changes": [
+      {
+        "type": "added",
+        "title": "Quality & incidents tab",
+        "description": "Review unit, ingestion, reconciliation regression, API integration, and release-history scenarios with their source test names, steps, expected results, and impacts. The page separates planted demo exceptions from software defects and operational incidents."
+      },
+      {
+        "type": "added",
+        "title": "Recorded test result and section preferences",
+        "description": "See the latest recorded local pytest result, warning, timestamp, and performance caveat. Show or hide review sections with browser-local preferences; AI guidance is opt-in and explicitly not connected."
+      },
+      {
+        "type": "improved",
+        "title": "Direct access for reviewers",
+        "description": "Open the page directly with /#quality. The public, read-only quality endpoint does not create or alter a reconciliation session."
+      }
+    ]
+  },
+  {
     "version": "0.2.0",
     "date": "2026-10-26",
     "title": "A home for product updates",
