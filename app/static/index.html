@@ -29,7 +29,18 @@
   </div>
 </header>
 
-<nav class="stepper" aria-label="Reconciliation steps">
+<nav class="app-tabs" aria-label="App sections">
+  <div class="app-tabs-inner" role="tablist" aria-label="ReconIQ workspace">
+    <button class="app-tab is-active" id="tab-workspace" type="button" role="tab"
+            aria-selected="true" aria-controls="view-workspace" data-view="workspace">Reconciliation</button>
+    <button class="app-tab" id="tab-whats-new" type="button" role="tab" tabindex="-1"
+            aria-selected="false" aria-controls="view-whats-new" data-view="whats-new">
+      What's New <span class="tab-version" id="app-version" hidden></span>
+    </button>
+  </div>
+</nav>
+
+<nav class="stepper" id="reconciliation-steps" aria-label="Reconciliation steps">
   <div class="stepper-inner">
     <button class="step is-active" data-step="files" type="button"><span class="step-num">1</span><span class="step-label">Load files</span></button>
     <span class="step-line"></span>
@@ -42,6 +53,7 @@
 </nav>
 
 <main class="page">
+  <div id="view-workspace" role="tabpanel" aria-labelledby="tab-workspace" tabindex="0">
 
   <!-- ============================ STEP 1: FILES ============================ -->
   <section id="step-files" class="panel">
@@ -282,6 +294,42 @@
     <div class="step-actions">
       <button class="btn btn-ghost" data-goto="results" type="button">Back to results</button>
       <p class="muted" id="exceptions-foot"></p>
+    </div>
+  </section>
+  </div>
+
+  <!-- ============================== WHAT'S NEW ============================= -->
+  <section id="view-whats-new" class="panel updates-panel" role="tabpanel"
+           aria-labelledby="tab-whats-new" tabindex="0" hidden>
+    <div class="updates-heading">
+      <div>
+        <p class="updates-kicker">Product updates</p>
+        <h1>What's New</h1>
+        <p class="updates-lede">New features, improvements and fixes &mdash; a clear history of what's changed in ReconIQ.</p>
+      </div>
+      <div class="version-summary" id="release-version-summary" hidden>
+        <span>Current version</span>
+        <strong id="current-version"></strong>
+      </div>
+    </div>
+
+    <div class="release-layout">
+      <div id="release-notes" aria-busy="true">
+        <p class="release-message" id="releases-message" role="status">Loading release notes…</p>
+        <button class="btn btn-ghost btn-sm retry-releases" id="btn-retry-releases" type="button" hidden>Try again</button>
+        <div id="release-list" class="release-list"></div>
+      </div>
+      <aside class="card version-guide" aria-labelledby="version-guide-title">
+        <h2 id="version-guide-title">A little clarity on versions</h2>
+        <p>Each update uses a three-part version:<span class="version-format">MAJOR.MINOR.PATCH</span></p>
+        <dl>
+          <dt>Major</dt><dd>Breaking changes to how the app works.</dd>
+          <dt>Minor</dt><dd>New features and improvements.</dd>
+          <dt>Patch</dt><dd>Fixes and small refinements.</dd>
+        </dl>
+        <p>Newest releases appear first. Previous versions stay here so everyone can see how ReconIQ has evolved.</p>
+        <button class="btn btn-ghost btn-sm btn-block" data-view="workspace" type="button">Back to reconciliation</button>
+      </aside>
     </div>
   </section>
 </main>

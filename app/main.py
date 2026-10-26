@@ -20,9 +20,10 @@ from fastapi.responses import FileResponse, Response
 from fastapi.staticfiles import StaticFiles
 from pydantic import BaseModel
 
-from reconiq import demo
+from reconiq import __version__, demo
 from reconiq.engine import Config, build_records, reconcile
 from reconiq.ingest import IngestError, prepare
+from reconiq.releases import RELEASES
 from reconiq.schema import describe_mapping, mapping_ready, normalize_mapping
 
 BASE_DIR = Path(__file__).resolve().parent
@@ -31,7 +32,7 @@ MAX_FILES = 8
 SESSION_TTL_SECONDS = 12 * 60 * 60
 MAX_SESSIONS = 40
 
-app = FastAPI(title="ReconIQ", docs_url="/api/docs", redoc_url=None)
+app = FastAPI(title="ReconIQ", version=__version__, docs_url="/api/docs", redoc_url=None)
 
 
 # --------------------------------------------------------------------------- #
@@ -114,7 +115,13 @@ class ReconcileRequest(BaseModel):
 # --------------------------------------------------------------------------- #
 @app.get("/api/health")
 def health() -> dict:
-    return {"status": "ok", "sessions": len(SESSIONS)}
+    return {"status": "ok", "version": __version__, "sessions": len(SESSIONS)}
+
+
+@app.get("/api/releases")
+def release_history() -> dict:
+    """Public product updates. Reading these never creates or changes a session."""
+    return {"current_version": __version__, "releases": RELEASES}
 
 
 @app.post("/api/session")

@@ -8,6 +8,9 @@ const state = {
   step: "files",
   filters: { severity: "all", category: "all", search: "" },
   showAllMatched: false,
+  view: "workspace",
+  releases: null,
+  releasesLoading: false,
 };
 
 const $ = (sel, root = document) => root.querySelector(sel);
@@ -77,6 +80,97 @@ async function api(path, options = {}) {
     throw new Error(typeof detail === "string" ? detail : JSON.stringify(detail));
   }
   return payload;
+}
+
+/* ------------------------------------------------------------- app sections */
+function setView(view) {
+  state.view = view;
+  $("#view-workspace").hidden = view !== "workspace";
+  $("#view-whats-new").hidden = view !== "whats-new";
+  $("#reconciliation-steps").hidden = view !== "workspace";
+  $$(".app-tab").forEach((tab) => {
+    const selected = tab.dataset.view === view;
+    tab.classList.toggle("is-active", selected);
+    tab.setAttribute("aria-selected", String(selected));
+    tab.tabIndex = selected ? 0 : -1;
+  });
+  closeDrawer();
+}
+
+function navigateView(view) {
+  const hash = view === "whats-new" ? "#whats-new" : "#reconciliation";
+  setView(view);
+  $(`#tab-${view}`).focus({ preventScroll: true });
+  if (window.location.hash !== hash) window.location.hash = hash;
+  window.scrollTo({ top: 0, behavior: "smooth" });
+}
+
+/* -------------------------------------------------------------- release notes */
+const CHANGE_LABELS = { added: "Added", improved: "Improved", fixed: "Fixed" };
+const RELEASE_DATE = new Intl.DateTimeFormat("en-GB", {
+  day: "numeric", month: "long", year: "numeric", timeZone: "UTC",
+});
+
+function renderReleases() {
+  const { current_version: version, releases } = state.releases;
+  $("#app-version").textContent = `v${version}`;
+  $("#app-version").hidden = false;
+  $("#current-version").textContent = `v${version}`;
+  $("#release-version-summary").hidden = false;
+  $("#releases-message").textContent = releases.length ? "" : "No release notes have been published yet.";
+  $("#releases-message").hidden = releases.length > 0;
+  $("#release-list").innerHTML = releases.map((release) => {
+    const current = release.version === version;
+    const date = new Date(`${release.date}T00:00:00Z`);
+    const dateLabel = Number.isNaN(date.getTime()) ? release.date : RELEASE_DATE.format(date);
+    return `
+      <article class="card release-card ${current ? "is-current" : ""}">
+        <div class="release-meta">
+          <span class="release-version">v${escapeHtml(release.version)}</span>
+          ${current ? '<span class="release-latest">Latest release</span>' : ""}
+          <time datetime="${escapeHtml(release.date)}">${escapeHtml(dateLabel)}</time>
+        </div>
+        <h2>${escapeHtml(release.title)}</h2>
+        <p class="release-summary">${escapeHtml(release.summary)}</p>
+        <ul class="release-changes">
+          ${(release.changes || []).map((change) => {
+            const type = Object.hasOwn(CHANGE_LABELS, change.type) ? change.type : "update";
+            return `
+              <li>
+                <span class="change-badge change-${type}">${CHANGE_LABELS[type] || "Update"}</span>
+                <div>
+                  <h3>${escapeHtml(change.title)}</h3>
+                  <p>${escapeHtml(change.description)}</p>
+                </div>
+              </li>`;
+          }).join("")}
+        </ul>
+      </article>`;
+  }).join("");
+}
+
+async function loadReleases() {
+  if (state.releasesLoading) return;
+  state.releasesLoading = true;
+  $("#release-notes").setAttribute("aria-busy", "true");
+  $("#releases-message").textContent = "Loading release notes…";
+  $("#releases-message").hidden = false;
+  $("#btn-retry-releases").hidden = true;
+  try {
+    const payload = await api("/api/releases");
+    if (!payload || typeof payload.current_version !== "string" || !Array.isArray(payload.releases)) {
+      throw new Error("Invalid release history.");
+    }
+    state.releases = payload;
+    renderReleases();
+  } catch (_) {
+    $("#releases-message").textContent = "Release notes could not be loaded. Please try again.";
+    $("#releases-message").hidden = false;
+    $("#btn-retry-releases").hidden = false;
+  } finally {
+    state.releasesLoading = false;
+    $("#release-notes").setAttribute("aria-busy", "false");
+  }
 }
 
 /* ------------------------------------------------------------------ steps */
@@ -742,6 +836,28 @@ async function download(format) {
 
 /* ------------------------------------------------------------------ wiring */
 function wire() {
+  $$("[data-view]").forEach((button) => {
+    button.addEventListener("click", () => navigateView(button.dataset.view));
+  });
+  $(".app-tabs-inner").addEventListener("keydown", (event) => {
+    const tabs = $$(".app-tab");
+    const index = tabs.indexOf(event.target);
+    if (index < 0) return;
+    let next;
+    if (event.key === "ArrowRight") next = (index + 1) % tabs.length;
+    else if (event.key === "ArrowLeft") next = (index + tabs.length - 1) % tabs.length;
+    else if (event.key === "Home") next = 0;
+    else if (event.key === "End") next = tabs.length - 1;
+    else return;
+    event.preventDefault();
+    tabs[next].focus();
+    navigateView(tabs[next].dataset.view);
+  });
+  window.addEventListener("hashchange", () => {
+    setView(window.location.hash === "#whats-new" ? "whats-new" : "workspace");
+  });
+  $("#btn-retry-releases").addEventListener("click", loadReleases);
+
   $$(".dropzone").forEach((zone) => {
     const input = $("input[type=file]", zone);
     ["dragenter", "dragover"].forEach((event) => {
@@ -838,14 +954,17 @@ function wire() {
 
 async function init() {
   wire();
+  setView(window.location.hash === "#whats-new" ? "whats-new" : "workspace");
+  renderFileLists();
+  // Product updates are public: do not wait for a reconciliation session to load them.
+  loadReleases();
+  loadDemoCatalogue();
   try {
     const session = await api("/api/session", { method: "POST" });
     state.sessionId = session.session_id;
   } catch (error) {
     toast(`Could not start a session: ${error.message}`, true);
   }
-  loadDemoCatalogue();
-  renderFileLists();
 }
 
 init();

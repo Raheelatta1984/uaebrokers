@@ -1,0 +1,58 @@
+[
+  {
+    "version": "0.2.0",
+    "date": "2026-10-26",
+    "title": "A home for product updates",
+    "summary": "See what has changed in ReconIQ, with a clear version number and a release history everyone can read.",
+    "changes": [
+      {
+        "type": "added",
+        "title": "What's New tab",
+        "description": "Explore the latest features and previous releases without uploading files or running a reconciliation. Share a direct link using /#whats-new."
+      },
+      {
+        "type": "added",
+        "title": "Versioned release history",
+        "description": "Every release now includes a version, publication date and plain-language notes. The current app version is also visible in the navigation."
+      },
+      {
+        "type": "improved",
+        "title": "Check updates without losing your place",
+        "description": "Move between What's New and Reconciliation while keeping your loaded files, column mappings, tolerances, results and exception filters."
+      }
+    ]
+  },
+  {
+    "version": "0.1.0",
+    "date": "2026-10-26",
+    "title": "The first ReconIQ prototype",
+    "summary": "A local-first workspace for comparing broker policy registers with insurer statements and turning differences into actionable exceptions.",
+    "changes": [
+      {
+        "type": "added",
+        "title": "CSV, Excel and PDF imports",
+        "description": "Load a broker register and multiple insurer statements, including PDF statements with or without a table grid. Review automatically detected columns and adjust the mapping before reconciling."
+      },
+      {
+        "type": "added",
+        "title": "Policy, premium and commission reconciliation",
+        "description": "Match policy numbers, review probable matches and set your own premium, commission and date tolerances. Differences are classified across 16 exception types and prioritised by severity."
+      },
+      {
+        "type": "added",
+        "title": "An actionable exception workspace",
+        "description": "See reconciliation KPIs and financial exposure, search and filter exceptions, and open a side-by-side comparison with a recommended next action."
+      },
+      {
+        "type": "added",
+        "title": "Excel and CSV exports",
+        "description": "Download an exception list as CSV or a three-sheet Excel workbook containing exceptions, a summary and matched policy pairs."
+      },
+      {
+        "type": "added",
+        "title": "One-click synthetic demo",
+        "description": "Try 40 broker policy lines and three insurer statements with 18 planted exceptions. Session data stays in memory and is discarded when the server stops."
+      }
+    ]
+  }
+]

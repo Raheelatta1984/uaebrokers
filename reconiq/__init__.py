@@ -1,3 +1,3 @@
 """ReconIQ - reconciliation and exception handling prototype."""
 
-__version__ = "0.1.0"
+from .releases import CURRENT_VERSION as __version__
