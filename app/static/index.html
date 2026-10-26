@@ -1,0 +1,314 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>ReconIQ - Insurance Brokerage Reconciliation</title>
+<meta name="description" content="ReconIQ reconciles a broker policy register against insurer statements and turns every difference into a trackable exception." />
+<link rel="stylesheet" href="/static/styles.css" />
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='8' fill='%230E1D2F'/%3E%3Cpath d='M8 20.5l5-5 3.5 3.5L24 11' stroke='%232ED3A6' stroke-width='2.6' fill='none' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E" />
+</head>
+<body>
+<header class="topbar">
+  <div class="topbar-inner">
+    <div class="brand">
+      <span class="brand-mark" aria-hidden="true">
+        <svg viewBox="0 0 32 32" width="30" height="30"><rect width="32" height="32" rx="8" fill="#16304C"/><path d="M8 20.5l5-5 3.5 3.5L24 11" stroke="#2ED3A6" stroke-width="2.6" fill="none" stroke-linecap="round" stroke-linejoin="round"/></svg>
+      </span>
+      <div>
+        <div class="brand-name">ReconIQ</div>
+        <div class="brand-sub">Policy, premium &amp; commission reconciliation</div>
+      </div>
+    </div>
+    <div class="topbar-actions">
+      <span class="pill pill-synthetic" title="No real broker data is used in this prototype">
+        <span class="dot"></span> Synthetic demo data
+      </span>
+      <button class="btn btn-ghost" id="btn-reset" type="button">Start over</button>
+    </div>
+  </div>
+</header>
+
+<nav class="stepper" aria-label="Reconciliation steps">
+  <div class="stepper-inner">
+    <button class="step is-active" data-step="files" type="button"><span class="step-num">1</span><span class="step-label">Load files</span></button>
+    <span class="step-line"></span>
+    <button class="step" data-step="mapping" type="button" disabled><span class="step-num">2</span><span class="step-label">Confirm columns</span></button>
+    <span class="step-line"></span>
+    <button class="step" data-step="results" type="button" disabled><span class="step-num">3</span><span class="step-label">Results</span></button>
+    <span class="step-line"></span>
+    <button class="step" data-step="exceptions" type="button" disabled><span class="step-num">4</span><span class="step-label">Exception list</span></button>
+  </div>
+</nav>
+
+<main class="page">
+
+  <!-- ============================ STEP 1: FILES ============================ -->
+  <section id="step-files" class="panel">
+    <div class="hero">
+      <div class="hero-copy">
+        <h1>Reconcile the broker book against insurer statements</h1>
+        <p>
+          Drop in a policy register and any number of commission statements &mdash; CSV, Excel or PDF.
+          ReconIQ matches them on policy number, checks premium, commission, cover and dates, and
+          turns every difference into a prioritised exception.
+        </p>
+        <ul class="hero-points">
+          <li>PDF statements, including ones with no table grid</li>
+          <li>Column mapping detected automatically, editable in the next step</li>
+          <li>Exception workbook ready to hand to finance</li>
+        </ul>
+      </div>
+      <div class="demo-card">
+        <div class="demo-card-head">
+          <span class="tag">Fastest way to see it</span>
+          <h2>Load the demo dataset</h2>
+        </div>
+        <p class="demo-lede">
+          A synthetic brokerage: <strong>40 policy lines</strong> for
+          <strong id="demo-broker-name">Gulf Crest Insurance Brokers LLC</strong> and three insurer
+          statements in three different formats.
+        </p>
+        <ul class="demo-files" id="demo-files"><li class="loading-row">Loading file list…</li></ul>
+        <button class="btn btn-primary btn-lg btn-block" id="btn-demo" type="button">
+          Load demo data
+        </button>
+        <p class="demo-foot">Runs entirely on this machine. Nothing is uploaded anywhere.</p>
+      </div>
+    </div>
+
+    <div class="upload-grid">
+      <div class="upload-card" data-side="broker">
+        <div class="upload-head">
+          <div>
+            <h3>1. Broker policy register</h3>
+            <p>Your own book: one row per policy, with premium and commission booked.</p>
+          </div>
+          <span class="badge-req">Required</span>
+        </div>
+        <label class="dropzone" data-side="broker">
+          <input type="file" accept=".csv,.xlsx,.xlsm,.pdf,.txt,.tsv" data-side="broker" hidden />
+          <span class="dz-icon" aria-hidden="true">⇪</span>
+          <span class="dz-title">Drop the register here or click to browse</span>
+          <span class="dz-hint">CSV or Excel · one file</span>
+        </label>
+        <div class="file-list" data-side="broker"></div>
+      </div>
+
+      <div class="upload-card" data-side="statement">
+        <div class="upload-head">
+          <div>
+            <h3>2. Insurer statements</h3>
+            <p>One or many: GIG, Orient, Sukoon, Takaful, or your own exports.</p>
+          </div>
+          <span class="badge-req">Required</span>
+        </div>
+        <label class="dropzone" data-side="statement">
+          <input type="file" accept=".csv,.xlsx,.xlsm,.pdf,.txt,.tsv" data-side="statement" multiple hidden />
+          <span class="dz-icon" aria-hidden="true">⇪</span>
+          <span class="dz-title">Drop statements here or click to browse</span>
+          <span class="dz-hint">CSV, Excel or PDF · up to 8 files</span>
+        </label>
+        <div class="file-list" data-side="statement"></div>
+      </div>
+    </div>
+
+    <div class="step-actions">
+      <p class="muted" id="files-summary">No files loaded yet.</p>
+      <button class="btn btn-primary" id="btn-to-mapping" type="button" disabled>Continue to column mapping</button>
+    </div>
+  </section>
+
+  <!-- =========================== STEP 2: MAPPING =========================== -->
+  <section id="step-mapping" class="panel" hidden>
+    <div class="section-head">
+      <div>
+        <h2>Confirm the columns</h2>
+        <p class="muted">
+          ReconIQ guessed the mapping for each file. Adjust anything that looks wrong &mdash;
+          the policy number and premium are the only hard requirements.
+        </p>
+      </div>
+    </div>
+    <div id="mapping-cards" class="mapping-cards"></div>
+
+    <div class="card tolerance-card">
+      <div class="card-head">
+        <h3>Tolerances</h3>
+        <p class="muted">Business policy, not code. These decide what counts as a real difference.</p>
+      </div>
+      <div class="tolerance-grid">
+        <label class="field">
+          <span class="field-label">Premium tolerance (AED)</span>
+          <input type="number" id="tol-premium" value="1" min="0" step="0.5" />
+          <span class="field-hint">Differences at or below this are ignored.</span>
+        </label>
+        <label class="field">
+          <span class="field-label">Commission tolerance (AED)</span>
+          <input type="number" id="tol-commission" value="1" min="0" step="0.5" />
+          <span class="field-hint">Small rounding from the insurer is normal.</span>
+        </label>
+        <label class="field">
+          <span class="field-label">Date tolerance (days)</span>
+          <input type="number" id="tol-days" value="7" min="0" step="1" />
+          <span class="field-hint">Covers legitimate inception date drift.</span>
+        </label>
+      </div>
+    </div>
+
+    <div class="step-actions">
+      <button class="btn btn-ghost" data-goto="files" type="button">Back</button>
+      <button class="btn btn-primary btn-lg" id="btn-reconcile" type="button">Run reconciliation</button>
+    </div>
+  </section>
+
+  <!-- =========================== STEP 3: RESULTS =========================== -->
+  <section id="step-results" class="panel" hidden>
+    <div class="section-head">
+      <div>
+        <h2>Reconciliation result</h2>
+        <p class="muted" id="results-lede"></p>
+      </div>
+      <div class="head-actions">
+        <button class="btn btn-ghost" id="btn-export-xlsx" type="button">Export workbook</button>
+        <button class="btn btn-primary" data-goto="exceptions" type="button">Open exception list</button>
+      </div>
+    </div>
+
+    <div class="kpi-grid" id="kpi-grid"></div>
+
+    <div class="split">
+      <div class="card">
+        <div class="card-head">
+          <h3>Exceptions by type</h3>
+          <p class="muted">Click a row to filter the exception list.</p>
+        </div>
+        <div id="category-breakdown" class="breakdown"></div>
+      </div>
+      <div class="card">
+        <div class="card-head">
+          <h3>Where the money is</h3>
+          <p class="muted">AED, from the variances found in this run.</p>
+        </div>
+        <div id="money-breakdown" class="money-list"></div>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-head">
+        <h3>Files reconciled</h3>
+        <p class="muted">How each file was read &mdash; worth checking before you trust the numbers.</p>
+      </div>
+      <div id="source-cards" class="source-cards"></div>
+    </div>
+
+    <div class="card">
+      <div class="card-head card-head-row">
+        <div>
+          <h3>Matched policies</h3>
+          <p class="muted" id="matched-lede"></p>
+        </div>
+        <button class="btn btn-ghost btn-sm" id="btn-toggle-matched" type="button">Show all</button>
+      </div>
+      <div class="table-wrap">
+        <table class="data-table" id="matched-table">
+          <thead>
+            <tr><th>Policy</th><th>Insured</th><th>Insurer</th><th class="num">Premium</th><th class="num">Commission</th><th>Match</th><th class="num">Exceptions</th></tr>
+          </thead>
+          <tbody></tbody>
+        </table>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-head">
+        <h3>Method &amp; assumptions</h3>
+        <p class="muted">Stated plainly so a finance team can challenge them.</p>
+      </div>
+      <ul class="assumption-list" id="assumptions"></ul>
+      <div id="data-quality"></div>
+    </div>
+
+    <div class="step-actions">
+      <button class="btn btn-ghost" data-goto="mapping" type="button">Adjust mapping or tolerances</button>
+      <button class="btn btn-primary" data-goto="exceptions" type="button">Review exceptions</button>
+    </div>
+  </section>
+
+  <!-- ========================== STEP 4: EXCEPTIONS ========================== -->
+  <section id="step-exceptions" class="panel" hidden>
+    <div class="section-head">
+      <div>
+        <h2>Exception list</h2>
+        <p class="muted" id="exceptions-lede"></p>
+      </div>
+      <div class="head-actions">
+        <button class="btn btn-ghost" id="btn-export-csv" type="button">Export CSV</button>
+        <button class="btn btn-primary" id="btn-export-xlsx-2" type="button">Export workbook</button>
+      </div>
+    </div>
+
+    <div class="toolbar">
+      <div class="search">
+        <input type="search" id="exception-search" placeholder="Search policy, insured, insurer or value…" />
+      </div>
+      <div class="chips" id="severity-chips">
+        <button class="chip is-active" data-severity="all" type="button">All <span data-count="all">0</span></button>
+        <button class="chip chip-high" data-severity="high" type="button"><span class="dot"></span>High <span data-count="high">0</span></button>
+        <button class="chip chip-medium" data-severity="medium" type="button"><span class="dot"></span>Medium <span data-count="medium">0</span></button>
+        <button class="chip chip-low" data-severity="low" type="button"><span class="dot"></span>Low <span data-count="low">0</span></button>
+      </div>
+      <select id="category-filter" class="select"></select>
+    </div>
+
+    <div class="table-wrap table-wrap-tall">
+      <table class="data-table exception-table" id="exception-table">
+        <thead>
+          <tr>
+            <th class="col-sev">Severity</th>
+            <th>Exception</th>
+            <th>Policy</th>
+            <th>Insured</th>
+            <th>Broker book</th>
+            <th>Insurer statement</th>
+            <th class="num">Variance (AED)</th>
+          </tr>
+        </thead>
+        <tbody></tbody>
+      </table>
+      <p class="empty-state" id="exception-empty" hidden>No exceptions match this filter.</p>
+    </div>
+
+    <div class="step-actions">
+      <button class="btn btn-ghost" data-goto="results" type="button">Back to results</button>
+      <p class="muted" id="exceptions-foot"></p>
+    </div>
+  </section>
+</main>
+
+<aside class="drawer" id="drawer" hidden aria-label="Exception detail">
+  <div class="drawer-head">
+    <div>
+      <span class="drawer-kicker" id="drawer-kicker"></span>
+      <h3 id="drawer-title"></h3>
+    </div>
+    <button class="icon-btn" id="drawer-close" type="button" aria-label="Close">✕</button>
+  </div>
+  <div class="drawer-body" id="drawer-body"></div>
+</aside>
+<div class="scrim" id="scrim" hidden></div>
+
+<div class="overlay" id="overlay" hidden>
+  <div class="overlay-card">
+    <div class="spinner"></div>
+    <h3 id="overlay-title">Reconciling</h3>
+    <p id="overlay-step">Reading files…</p>
+    <div class="progress"><span id="overlay-bar"></span></div>
+  </div>
+</div>
+
+<div class="toast" id="toast" hidden></div>
+
+<script src="/static/app.js" defer></script>
+</body>
+</html>

@@ -1,0 +1,41 @@
+Policy No,Insured Name,Insurer,Class of Business,Inception Date,Expiry Date,Sum Insured,Gross Premium,Commission %,Commission Amount,Currency,Status
+GIG/2026/000101,Al Habtoor Engineering LLC,GIG Gulf,Engineering,01/01/2026,31/12/2026,"5,000,000","42,500.00",12.5%,"5,312.50",AED,Active
+GIG/2026/000102,Meraas Facilities Management,GIG Gulf,Property,01/01/2026,31/12/2026,"12,000,000","36,000.00",15%,"5,400.00",AED,Active
+GIG/2026/000103,Aswaaq Retail Group,GIG Gulf,Property,15/01/2026,14/01/2026,"8,500,000","28,750.00",12.5%,"3,593.75",AED,Active
+GIG/2026/000104,Bin Ghanim Transport LLC,GIG Gulf,Motor Fleet,01/02/2026,31/01/2026,"3,200,000","61,400.00",10%,"6,140.00",AED,Active
+GIG/2026/000105,Oasis Medical Centre,GIG Gulf,Medical Malpractice,01/03/2026,28/02/2026,"2,000,000","18,000.00",15%,"2,700.00",AED,Active
+GIG/2026/000106,Sharjah Steel Industries,GIG Gulf,Marine Cargo,01/04/2026,31/03/2026,"7,500,000","24,900.00",12.5%,"3,112.50",AED,Active
+GIG/2026/000107,Falcon Hospitality Group,GIG Gulf,Property,01/05/2026,30/04/2026,"15,000,000","45,000.00",15%,"6,750.00",AED,Active
+GIG/2026/000108,Dune Security Services,GIG Gulf,Liability,01/06/2026,31/05/2026,"1,000,000","9,600.00",15%,"1,440.00",AED,Active
+GIG/2026/000109,Reem Island Contracting,GIG Gulf,Engineering,01/01/2026,31/12/2026,"4,000,000","12,500.00",12.5%,"1,562.50",AED,Active
+GIG/2026/000110,Arabian Cement Works,GIG Gulf,Property,01/02/2026,31/01/2026,"6,000,000","8,000.00",15%,"1,200.00",AED,Active
+GIG/2026/000111,Marina Yacht Club,GIG Gulf,Marine Hull,01/01/2026,31/12/2026,"2,500,000","15,000.00",15%,"2,250.00",AED,Cancelled
+GIG/2026/000112,Nakheel Community Services,GIG Gulf,Liability,01/07/2026,30/06/2026,"3,000,000","6,400.00",12.5%,800.00,AED,Active
+GIG/2026/000113,Dubai Frame Attractions,GIG Gulf,Property,01/03/2026,28/02/2026,"9,000,000","9,000.00",12.5%,"1,125.00",AED,Active
+GIG/2026/000451,Horizon Tech Park,GIG Gulf,Engineering,01/08/2026,31/07/2026,"11,000,000","33,000.00",12.5%,"4,125.00",AED,Active
+GIG/2026/000312,Ras Al Khaimah Quarry,GIG Gulf,Engineering,01/05/2026,30/04/2026,"6,500,000","20,000.00",12.5%,"2,500.00",AED,Active
+GIG/2026/000114,Jumeirah Retail Holdings,GIG Gulf,Property,01/04/2026,31/03/2026,"1,000,000","7,500.00",15%,"1,125.00",AED,Active
+GIG/2026/000115,Emirates Logistics LLC,GIG Gulf,Marine Cargo,01/06/2026,31/05/2026,"4,500,000","14,400.00",12.5%,"1,800.00",AED,Active
+GIG/2026/000116,Global Freight Partners FZE,GIG Gulf,Marine Cargo,01/07/2026,30/06/2026,"3,600,000","4,901.29",15%,735.19,USD,Active
+OIC/MOT/2026/4501,Al Ghurair Foods LLC,Orient Insurance PJSC,Motor Fleet,01/01/2026,31/12/2026,"4,200,000","54,000.00",10%,"5,400.00",AED,Active
+OIC/MOT/2026/4502,Union Coop Hypermarkets,Orient Insurance PJSC,Property,01/01/2026,31/12/2026,"20,000,000","52,000.00",12.5%,"6,500.00",AED,Active
+OIC/MOT/2026/4503,ENOC Retail Stations,Orient Insurance PJSC,Liability,01/02/2026,31/01/2026,"5,000,000","21,500.00",15%,"3,225.00",AED,Active
+OIC/MOT/2026/4504,Dubai Investments Park,Orient Insurance PJSC,Property,01/03/2026,28/02/2026,"18,000,000","43,200.00",12.5%,"5,400.00",AED,Active
+OIC/MOT/2026/4505,Al Rostamani Trading,Orient Insurance PJSC,Motor Fleet,01/04/2026,31/03/2026,"2,800,000","39,000.00",10%,"3,900.00",AED,Active
+OIC/MOT/2026/4506,National Catering Company,Orient Insurance PJSC,Medical,01/05/2026,30/04/2026,"1,500,000","26,400.00",12.5%,"3,300.00",AED,Active
+OIC/MOT/2026/4507,Rivoli Group Retail,Orient Insurance PJSC,Property,01/06/2026,31/05/2026,"6,200,000","17,800.00",12.5%,"2,225.00",AED,Active
+OIC/MOT/2026/4509,Emirates Steel Rolling,Orient Insurance PJSC,Engineering,01/03/2026,28/02/2026,"9,500,000","29,400.00",12.5%,"3,675.00",AED,Active
+OIC/MOT/2026/4508,Khadamat Facilities LLC,Orient Insurance PJSC,Property,01/07/2026,30/06/2026,"5,400,000","16,200.00",12.5%,"2,025.00",AED,Active
+OIC/MOT/2026/4510,Zenith Tourism LLC,Orient Insurance PJSC,Liability,01/08/2026,31/07/2026,"2,200,000","6,000.00",12.5%,750.00,AED,Active
+OIC/MOT/2026/4510,Zenith Tourism LLC,Orient Insurance PJSC,Liability,01/08/2026,31/07/2026,"2,200,000","6,000.00",12.5%,750.00,AED,Active
+OIC/MOT/2026/4511,Barakat Vegetables LLC,Orient Insurance PJSC,Motor Fleet,01/09/2026,31/08/2026,"1,800,000","6,000.00",12.5%,750.00,AED,Active
+SKN/PRP/2026/7781,Al Zahia Community Mall,Sukoon Insurance,Property,01/01/2026,31/12/2026,"14,000,000","38,500.00",15%,"5,775.00",AED,Active
+SKN/PRP/2026/7782,Ajman Free Zone Authority,Sukoon Insurance,Property,01/02/2026,31/01/2026,"22,000,000","61,000.00",12.5%,"7,625.00",AED,Active
+SKN/PRP/2026/7783,Gulf Pipes Manufacturing,Sukoon Insurance,Engineering,01/03/2026,28/02/2026,"7,800,000","23,400.00",12.5%,"2,925.00",AED,Active
+SKN/PRP/2026/7784,Swiss International School,Sukoon Insurance,Liability,01/04/2026,31/03/2026,"3,000,000","13,200.00",15%,"1,980.00",AED,Active
+SKN/PRP/2026/7785,Fujairah Port Services,Sukoon Insurance,Marine Cargo,01/05/2026,30/04/2026,"9,000,000","27,000.00",12.5%,"3,375.00",AED,Active
+SKN/PRP/2026/7786,Al Ain Farms Dairy,Sukoon Insurance,Property,01/06/2026,31/05/2026,"5,500,000","16,500.00",15%,"2,475.00",AED,Active
+SKN/PRP/2026/7787,Bawadi Retail LLC,Sukoon Insurance,Property,01/07/2026,30/06/2026,"4,100,000","11,035.00",12.5%,"1,379.38",AED,Active
+SKN/PRP/2026/7788,Hatta Adventure Tourism,Sukoon Insurance,Liability,01/08/2026,31/07/2026,"1,200,000","4,800.00",15%,720.00,AED,Active
+TE/2026/9001,Mirdif Medical Supplies,Takaful Emarat,Medical,01/01/2026,31/12/2026,"2,400,000","19,200.00",12.5%,"2,400.00",AED,Active
+TE/2026/9002,Green Oasis Landscaping,Takaful Emarat,Liability,01/03/2026,28/02/2026,"900,000","5,400.00",12.5%,675.00,AED,Active
