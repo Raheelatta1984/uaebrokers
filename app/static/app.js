@@ -651,9 +651,15 @@ function renderCategoryBreakdown(result) {
       <button class="breakdown-row" data-category="${escapeHtml(key)}" type="button">
         <span class="breakdown-name">${escapeHtml(meta.label)}</span>
         <span class="breakdown-count">${count}</span>
-        <span class="breakdown-bar"><span class="sev-${severity}" style="width:${Math.max(6, (count / max) * 100)}%"></span></span>
+        <span class="breakdown-bar"><span class="sev-${severity}" data-width="${Math.max(6, (count / max) * 100)}"></span></span>
       </button>`;
   }).join("") : `<p class="muted">No exceptions found. Either the book is clean or the mapping needs attention.</p>`;
+
+  // Bar widths are set through the CSSOM rather than inline style attributes so the
+  // Content-Security-Policy can keep style-src restricted to first-party stylesheets.
+  $$("#category-breakdown .breakdown-bar [data-width]").forEach((bar) => {
+    bar.style.width = `${Number(bar.dataset.width)}%`;
+  });
 
   $$("#category-breakdown .breakdown-row").forEach((row) => {
     row.addEventListener("click", () => {
@@ -849,7 +855,7 @@ function openDrawer(findingId) {
         </div>
       </div>
       ${finding.variance_aed !== null && finding.variance_aed !== undefined ? `
-        <p class="muted" style="margin-top:9px">
+        <p class="muted variance-note">
           Variance in AED:
           <strong class="${finding.variance_aed < 0 ? "variance-neg" : "variance-pos"}">${AED.format(finding.variance_aed)}</strong>
         </p>` : ""}
@@ -875,7 +881,7 @@ function openDrawer(findingId) {
     ${both ? `
     <div class="drawer-section">
       <h4>Full record comparison</h4>
-      <div class="table-wrap" style="max-height:none">
+      <div class="table-wrap table-wrap-unbounded">
         <table class="data-table">
           <thead><tr><th>Field</th><th>Broker book</th><th>Statement</th></tr></thead>
           <tbody>

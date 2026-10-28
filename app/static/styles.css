@@ -305,6 +305,8 @@ button { font-family: inherit; }
 /* ----------------------------------------------------------------- tables */
 .table-wrap { overflow: auto; border: 1px solid var(--line); border-radius: 10px; max-height: 460px; }
 .table-wrap-tall { max-height: 620px; }
+.table-wrap-unbounded { max-height: none; }
+.variance-note { margin-top: 9px; }
 .data-table { width: 100%; border-collapse: collapse; font-size: 13px; }
 .data-table thead th {
   position: sticky; top: 0; background: #f7f9fc; text-align: left; padding: 9px 12px;

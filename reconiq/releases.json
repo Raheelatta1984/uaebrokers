@@ -1,5 +1,28 @@
 [
   {
+    "version": "0.3.1",
+    "date": "2026-10-28",
+    "title": "Hardened browser security and pinned dependencies",
+    "summary": "ReconIQ now sends a strict browser security policy on every page and API response, keeps uploaded data out of caches, and installs only verified, audited dependency versions.",
+    "changes": [
+      {
+        "type": "improved",
+        "title": "Browser security headers and content security policy",
+        "description": "Every response now carries a first-party-only Content-Security-Policy plus X-Content-Type-Options, Referrer-Policy, X-Frame-Options and Permissions-Policy. Scripts and styles can only load from ReconIQ itself, the app cannot be framed by other sites, and the few inline styles were moved into the stylesheet so the policy is enforced rather than advisory."
+      },
+      {
+        "type": "improved",
+        "title": "Uploaded data stays out of caches and docs stay private in production",
+        "description": "API responses that carry broker or insurer data are marked no-store. Setting RECONIQ_ENV=production turns off the interactive API documentation page and adds the HTTPS-only headers; local development is unchanged."
+      },
+      {
+        "type": "improved",
+        "title": "Verified, audited dependency versions",
+        "description": "Python dependencies are pinned with cryptographic hashes compiled from requirements.in, continuous integration audits them for known vulnerabilities on every run, GitHub Actions are pinned to exact commits, and Dependabot proposes updates as reviewable pull requests."
+      }
+    ]
+  },
+  {
     "version": "0.3.0",
     "date": "2026-10-26",
     "title": "A transparent quality and incident review",
