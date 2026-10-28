@@ -1,0 +1,17 @@
+# Keeps the hash-pinned Python lock (requirements.in -> requirements.txt) and the
+# SHA-pinned GitHub Actions current. Every update arrives as a reviewable pull request
+# that runs the full test suite and the pip-audit step.
+version: 2
+updates:
+  - package-ecosystem: pip
+    directory: /
+    schedule:
+      interval: weekly
+    open-pull-requests-limit: 5
+    groups:
+      python-dependencies:
+        patterns: ["*"]
+  - package-ecosystem: github-actions
+    directory: /
+    schedule:
+      interval: weekly

@@ -9,13 +9,14 @@ from __future__ import annotations
 
 import csv
 import io
+import os
 import secrets
 import time
 from dataclasses import dataclass, field
 from decimal import Decimal, InvalidOperation
 from pathlib import Path
 
-from fastapi import FastAPI, File, Form, Header, HTTPException, UploadFile
+from fastapi import FastAPI, File, Form, Header, HTTPException, Request, UploadFile
 from fastapi.responses import FileResponse, Response
 from fastapi.staticfiles import StaticFiles
 from pydantic import BaseModel
@@ -33,7 +34,76 @@ MAX_FILES = 8
 SESSION_TTL_SECONDS = 12 * 60 * 60
 MAX_SESSIONS = 40
 
-app = FastAPI(title="ReconIQ", version=__version__, docs_url="/api/docs", redoc_url=None)
+# RECONIQ_ENV=production turns off the interactive API docs and adds the HTTPS-only
+# headers. Anything else (the default) is treated as a local development run.
+ENVIRONMENT = os.environ.get("RECONIQ_ENV", "development").strip().lower()
+IS_PRODUCTION = ENVIRONMENT == "production"
+DOCS_URL = None if IS_PRODUCTION else "/api/docs"
+
+app = FastAPI(title="ReconIQ", version=__version__, docs_url=DOCS_URL, redoc_url=None)
+
+
+# --------------------------------------------------------------------------- #
+# Browser security headers
+# --------------------------------------------------------------------------- #
+# The UI is a single first-party script with no inline scripts, no eval and no
+# third-party origins, so the policy can be enforced rather than report-only.
+_CSP_DIRECTIVES = [
+    "default-src 'self'",
+    "script-src 'self'",
+    "style-src 'self'",
+    "img-src 'self' data:",
+    "font-src 'self'",
+    "connect-src 'self'",
+    "object-src 'none'",
+    "base-uri 'none'",
+    "frame-ancestors 'none'",
+    "form-action 'self'",
+]
+if IS_PRODUCTION:
+    _CSP_DIRECTIVES.append("upgrade-insecure-requests")
+CONTENT_SECURITY_POLICY = "; ".join(_CSP_DIRECTIVES)
+
+# Swagger UI (development only - see DOCS_URL) is rendered by FastAPI with assets
+# from jsDelivr and an inline bootstrap script, so that one route gets a policy
+# scoped to those origins instead of the strict first-party policy above.
+DOCS_CONTENT_SECURITY_POLICY = "; ".join([
+    "default-src 'self'",
+    "script-src 'self' https://cdn.jsdelivr.net 'unsafe-inline'",
+    "style-src 'self' https://cdn.jsdelivr.net 'unsafe-inline'",
+    "img-src 'self' data: https://cdn.jsdelivr.net https://fastapi.tiangolo.com",
+    "font-src 'self' data:",
+    "connect-src 'self'",
+    "object-src 'none'",
+    "base-uri 'none'",
+    "frame-ancestors 'none'",
+    "form-action 'self'",
+])
+
+SECURITY_HEADERS = {
+    "Content-Security-Policy": CONTENT_SECURITY_POLICY,
+    "X-Content-Type-Options": "nosniff",
+    "Referrer-Policy": "strict-origin-when-cross-origin",
+    "X-Frame-Options": "DENY",
+    "Permissions-Policy": "camera=(), microphone=(), geolocation=(), payment=()",
+}
+if IS_PRODUCTION:
+    # Browsers ignore HSTS over plain HTTP, so this is safe to send whenever the
+    # production flag is set; it only takes effect once the site is served over TLS.
+    SECURITY_HEADERS["Strict-Transport-Security"] = "max-age=31536000; includeSubDomains"
+
+
+@app.middleware("http")
+async def security_headers(request: Request, call_next):
+    response = await call_next(request)
+    for name, value in SECURITY_HEADERS.items():
+        response.headers.setdefault(name, value)
+    if DOCS_URL and request.url.path == DOCS_URL:
+        response.headers["Content-Security-Policy"] = DOCS_CONTENT_SECURITY_POLICY
+    if request.url.path.startswith("/api/"):
+        # Uploaded broker and insurer data must never land in a shared or disk cache.
+        response.headers["Cache-Control"] = "no-store"
+    return response
 
 
 # --------------------------------------------------------------------------- #

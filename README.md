@@ -32,6 +32,10 @@ python3 -m venv .venv
 No API keys, no paid services, no external network calls at runtime. Everything is held in
 memory and discarded when the process stops.
 
+`requirements.txt` is a hash-pinned lock compiled from `requirements.in`, so `pip` installs
+exactly the audited versions and nothing else. When you host ReconIQ anywhere other than your
+own machine, start it with `RECONIQ_ENV=production` — see [Security](#security).
+
 ## What the prototype does
 
 1. **Load files** — a broker policy register (CSV/Excel) and any number of insurer statements
@@ -191,12 +195,13 @@ reconiq/
   releases.json  public release history (newest entry defines the app version)
   releases.py    changelog loading and validation
 app/
-  main.py        FastAPI app: sessions, upload, reconcile, exports
+  main.py        FastAPI app: sessions, upload, reconcile, exports, security headers
   static/        index.html, styles.css, app.js  (no build step)
 demo_data/       the generated demo files, ready to drag into the app
-tests/           parsing, mapping, ingestion, engine rules, API and release-history tests
-docs/            demo script and release-publishing guide
-.github/         continuous integration for pull requests and main
+tests/           parsing, mapping, ingestion, engine rules, API, release-history and security tests
+docs/            demo script, release-publishing guide, security review and agent prompt
+requirements.in  direct dependencies; requirements.txt is the hash-pinned lock compiled from it
+.github/         continuous integration (tests + dependency audit) and Dependabot
 ```
 
 The engine has no framework, database or file-system dependency — that is intentional, because
@@ -214,7 +219,10 @@ dates, zero-padded keys, dotted legal suffixes), column detection traps (`Commis
 exception category in the demo dataset, tolerance sensitivity, and the API including export
 files and the failure paths (bad mapping, empty statement, unsupported file). Release-history
 tests also validate semantic versions, date ordering, required notes, public read-only access
-and version consistency. GitHub Actions runs the full suite on pull requests and `main`.
+and version consistency. `tests/test_security.py` checks the security headers on every route,
+the production flag, and guards against credentials or unescaped values reaching browser
+JavaScript. GitHub Actions installs the hash-pinned lock, runs `pip-audit` against it and then
+the full suite on pull requests and `main`.
 
 ## Deliberately not built (V0 scope)
 
@@ -235,6 +243,29 @@ Those wait for a paid pilot, exactly as the project plan sets out.
    real commission data leaves the broker's premises.
 5. **Would a PDF-only statement realistically be accepted as input in the pilot**, or does the
    broker's own insurer correspondence need to be normalised first?
+
+## Security
+
+The browser never holds a credential: the reconciliation session id lives in a JavaScript
+variable and travels in the `X-Session` header, and the only browser storage used is for
+Quality-tab display preferences. Every response carries a strict, first-party-only
+`Content-Security-Policy` (`script-src 'self'`, `connect-src 'self'`, `frame-ancestors 'none'`,
+no inline scripts or styles) plus `X-Content-Type-Options`, `Referrer-Policy`, `X-Frame-Options`
+and `Permissions-Policy`; API responses are `Cache-Control: no-store` so uploaded broker data
+never lands in a cache. The review behind these choices is in
+[`docs/security/credential-storage-review-2026-10-28.md`](docs/security/credential-storage-review-2026-10-28.md).
+
+| `RECONIQ_ENV` | Interactive API docs (`/api/docs`) | HTTPS-only headers |
+|---|---|---|
+| unset / `development` (default) | on, with a policy limited to the Swagger CDN | off |
+| `production` | off (404) | `Strict-Transport-Security` and `upgrade-insecure-requests` on |
+
+Dependencies: edit `requirements.in`, then regenerate the lock with
+`./.venv/bin/pip install pip-tools && ./.venv/bin/pip-compile --generate-hashes --no-strip-extras --output-file=requirements.txt requirements.in`.
+CI refuses any artefact whose hash does not match and fails on known vulnerabilities
+(`pip-audit`); Dependabot opens update pull requests weekly. The reusable checklist that
+produced this hardening lives in
+[`docs/prompts/security-credential-storage-hardening-prompt.md`](docs/prompts/security-credential-storage-hardening-prompt.md).
 
 ## Data handling
 

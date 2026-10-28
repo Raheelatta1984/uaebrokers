@@ -53,11 +53,11 @@ def test_quality_catalogue_is_public_and_describes_test_evidence(client):
     response = client.get("/api/quality")
     assert response.status_code == 200
     quality = response.json()
-    assert quality["verification"]["passed"] == 108
+    assert quality["verification"]["passed"] == 121
     assert quality["verification"]["failed"] == 0
     assert quality["verification"]["command"] == "python -m pytest tests -q"
     assert {suite["id"] for suite in quality["suites"]} >= {
-        "normalization", "schema", "ingestion", "reconciliation", "api", "release-history"
+        "normalization", "schema", "ingestion", "reconciliation", "api", "release-history", "security"
     }
     reconciliation = next(s for s in quality["suites"] if s["id"] == "reconciliation")
     assert "test_demo_dataset_surfaces_the_planted_exceptions" in reconciliation["scripts"]
