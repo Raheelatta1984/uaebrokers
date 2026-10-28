@@ -255,10 +255,10 @@ and `Permissions-Policy`; API responses are `Cache-Control: no-store` so uploade
 never lands in a cache. The review behind these choices is in
 [`docs/security/credential-storage-review-2026-10-28.md`](docs/security/credential-storage-review-2026-10-28.md).
 
-| `RECONIQ_ENV` | Interactive API docs (`/api/docs`) | HTTPS-only headers |
+| `RECONIQ_ENV` | Interactive API docs (`/api/docs`) and schema (`/openapi.json`) | HTTPS-only headers |
 |---|---|---|
 | unset / `development` (default) | on, with a policy limited to the Swagger CDN | off |
-| `production` | off (404) | `Strict-Transport-Security` and `upgrade-insecure-requests` on |
+| `production` | both off (404) | `Strict-Transport-Security` and `upgrade-insecure-requests` on |
 
 Dependencies: edit `requirements.in`, then regenerate the lock with
 `./.venv/bin/pip install pip-tools && ./.venv/bin/pip-compile --generate-hashes --no-strip-extras --output-file=requirements.txt requirements.in`.

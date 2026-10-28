@@ -115,3 +115,36 @@ styles were removed, which is the only class of violation the inventory could pr
 - The working tree was not clean at the start: the only untracked file was the run-book itself,
   written earlier in this session; it was committed first rather than stashed.
 - Branch cleanup operated on remote refs only (no checkout of `main`), for the same reason.
+
+---
+
+# Re-run on the hardened `main` (2026-10-28, after PR #4)
+
+The run-book was executed a second time from `main` @ `48c0342` (the squash-merge of PR #4) to
+confirm the controls landed and to close the follow-ups it could. Baseline on this branch:
+`python -m pytest tests -q` → **121 passed, 1 warning** (hash-checked install from the lock).
+
+## Applicability verdict (re-run)
+
+| Tier | Verdict | Evidence |
+|---|---|---|
+| **A — credential exposure fix** | **Not applicable** (unchanged) | Scans 1.2–1.4 return no matches outside the tests that encode them; session id still in memory (`app/static/app.js:5`) + `X-Session` header (`:83`, `:926`); no cookies, no CORS. |
+| **B — defence in depth** | **Applied; one residual** | Strict CSP and companion headers present (`app/main.py:50-106`); zero inline scripts/handlers/styles in `app/static/`; docs gated (`app/main.py:41`). Residual: `/openapi.json` is still served when `RECONIQ_ENV=production` (FastAPI's default `openapi_url` was not gated with the docs). |
+| **C — supply chain** | **Applied; two Dependabot PRs pending** | `requirements.txt`: 1,207 hashes, 0 unpinned ranges; `tests.yml:17-18` SHA-pinned; `pip-audit` step at `:27-28`; `.github/dependabot.yml` present and already active — it opened PR #5 (`actions/checkout` 4.4.0 → 7.0.1) and PR #6 (`actions/setup-python` 5.6.0 → 7.1.0), both with green `tests` + Vercel checks; its first `pip` run found nothing to update. Post-merge `Tests` run on `main` @ `48c0342`: success. |
+
+## Findings (re-run)
+
+| # | Severity | Finding | Evidence | Action | Tier |
+|---|---|---|---|---|---|
+| R1 | Low | `/openapi.json` (full route and schema listing) remains public in production although the docs UI is hidden. | `app/main.py:43` sets `docs_url` only; `tests/test_security.py` asserted `openapi == 200` in production | Gate `openapi_url` with the same flag; update the production test and README. | B |
+| R2 | Info | Deployed environments must set `RECONIQ_ENV=production` for docs gating and HSTS; the Vercel project linked to this repository could not be inspected from this session (token lacks team scope). | Vercel checks on PRs #4–#6; connector `list_projects` → access denied | Owner action: confirm `RECONIQ_ENV=production` in the Vercel project's Production environment variables. | B |
+| R3 | Info | Two green Dependabot PRs bump the SHA-pinned actions across major versions (checkout v4→v7, setup-python v5→v7). | PRs #5, #6 | Merge in order after this PR; both runners are Node-24 capable (checks already passed on them). | C |
+| R4 | Info | Finding 12 from the first run (session eviction, unbounded upload size) is unchanged. | `app/main.py:33-34,67-73` | Still deferred — needs a limits decision before multi-user hosting. | — |
+
+## Plan (re-run)
+
+- `app/main.py`: `openapi_url=None` in production (one line, same flag as the docs).
+- `tests/test_security.py`: production probe asserts `/openapi.json` → 404; development behaviour unchanged.
+- `README.md`: `RECONIQ_ENV` table mentions `/openapi.json`.
+- `reconiq/releases.json`: 0.3.2 patch entry; `reconiq/quality.py`: refresh the recorded snapshot.
+- Then: PR → CI → squash-merge; merge Dependabot PRs #5 and #6 (each only if still green and mergeable); delete every non-`main` branch.

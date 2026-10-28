@@ -111,7 +111,11 @@ def test_api_docs_are_available_locally_with_a_policy_limited_to_the_swagger_cdn
 
 
 def test_production_flag_disables_api_docs_and_enables_https_only_headers():
-    """RECONIQ_ENV is read at import time, so the production app is built in a subprocess."""
+    """RECONIQ_ENV is read at import time, so the production app is built in a subprocess.
+
+    Both the Swagger page and the OpenAPI schema it reads (the full route listing) must be
+    hidden; the application routes and the health check stay available.
+    """
     probe = """
 import json
 from fastapi.testclient import TestClient
@@ -134,7 +138,7 @@ print(json.dumps({
     assert result.returncode == 0, result.stderr
     payload = json.loads(result.stdout.strip().splitlines()[-1])
     assert payload["docs"] == 404
-    assert payload["openapi"] == 200
+    assert payload["openapi"] == 404
     assert payload["health"] == 200
     assert payload["hsts"] == "max-age=31536000; includeSubDomains"
     assert "upgrade-insecure-requests" in payload["csp"]

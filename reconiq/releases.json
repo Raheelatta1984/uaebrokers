@@ -1,5 +1,18 @@
 [
   {
+    "version": "0.3.2",
+    "date": "2026-10-28",
+    "title": "API schema hidden in production",
+    "summary": "A follow-up to the security hardening: production deployments no longer publish the machine-readable API schema alongside the hidden documentation page.",
+    "changes": [
+      {
+        "type": "improved",
+        "title": "OpenAPI schema follows the production flag",
+        "description": "When RECONIQ_ENV=production, /openapi.json now returns 404 together with /api/docs, so the full route listing is not exposed. Local development still serves both."
+      }
+    ]
+  },
+  {
     "version": "0.3.1",
     "date": "2026-10-28",
     "title": "Hardened browser security and pinned dependencies",
