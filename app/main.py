@@ -39,8 +39,12 @@ MAX_SESSIONS = 40
 ENVIRONMENT = os.environ.get("RECONIQ_ENV", "development").strip().lower()
 IS_PRODUCTION = ENVIRONMENT == "production"
 DOCS_URL = None if IS_PRODUCTION else "/api/docs"
+# The schema the docs page reads (the full route listing) is hidden with it in production.
+OPENAPI_URL = None if IS_PRODUCTION else "/openapi.json"
 
-app = FastAPI(title="ReconIQ", version=__version__, docs_url=DOCS_URL, redoc_url=None)
+app = FastAPI(
+    title="ReconIQ", version=__version__, docs_url=DOCS_URL, redoc_url=None, openapi_url=OPENAPI_URL,
+)
 
 
 # --------------------------------------------------------------------------- #
